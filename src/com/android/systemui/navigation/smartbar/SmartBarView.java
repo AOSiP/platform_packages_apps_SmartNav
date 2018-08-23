@@ -159,6 +159,9 @@ public class SmartBarView extends BaseNavigationBar {
 
     private GestureDetector mNavDoubleTapToSleep;
 
+    private boolean mRotateButtonVisible;
+    private int mLastRotation = 0;
+
     @Override
     public void onReceive(Intent intent) {
         if (AudioManager.STREAM_MUTE_CHANGED_ACTION.equals(intent.getAction())
@@ -189,6 +192,22 @@ public class SmartBarView extends BaseNavigationBar {
         return streamType == AudioManager.STREAM_MUSIC &&
                 (mAudioManager.isStreamMute(streamType) ||
                 mAudioManager.getStreamVolume(streamType) == 0);
+    }
+
+    @Override
+    public void setRotateSuggestionButtonState(boolean visible, boolean skipAnim) {
+        mRotateButtonVisible = visible;
+        //skipAnim
+        setNavigationIconHints(mNavigationIconHints, true);
+    }
+
+    @Override
+    public void setLastRotation(int rotation) {
+        mLastRotation = rotation;
+    }
+
+    public void rotate() {
+        getRotationController().setRotationLockedAtAngle(true, mLastRotation);
     }
 
     public SmartBarView(Context context) {
@@ -398,7 +417,7 @@ public class SmartBarView extends BaseNavigationBar {
     }
 
     private void setMediaArrowsVisibility(boolean backAlt) {
-        setMediaArrowsVisibility(mCurrentView, (!backAlt && (mIsMediaPlaying/* && mAudioManager.isMusicActive()*/))
+        setMediaArrowsVisibility(mCurrentView, (!backAlt && !mRotateButtonVisible && (mIsMediaPlaying/* && mAudioManager.isMusicActive()*/))
                 ? View.VISIBLE : View.INVISIBLE);
     }
 
@@ -407,6 +426,15 @@ public class SmartBarView extends BaseNavigationBar {
         contextLeft.findViewWithTag(Res.Softkey.MEDIA_ARROW_LEFT).setVisibility(visibility);
         ViewGroup contextRight = (ViewGroup)currentOrHidden.findViewWithTag(Res.Softkey.CONTEXT_VIEW_RIGHT);
         contextRight.findViewWithTag(Res.Softkey.MEDIA_ARROW_RIGHT).setVisibility(visibility);
+    }
+
+    private void setRotationButtonVisibility() {
+        setRotationButtonVisibility(mCurrentView, mRotateButtonVisible ? View.VISIBLE : View.INVISIBLE);
+    }
+
+    private void setRotationButtonVisibility(View currentOrHidden, int visibility) {
+        ViewGroup contextRight = (ViewGroup)currentOrHidden.findViewWithTag(Res.Softkey.CONTEXT_VIEW_RIGHT);
+        contextRight.findViewWithTag(Res.Softkey.ROTATION_BUTTON).setVisibility(visibility);
     }
 
     @Override
@@ -424,28 +452,35 @@ public class SmartBarView extends BaseNavigationBar {
         mNavigationIconHints = hints;
         getSmartBackButtonIcon().setImeVisible(backAlt);
 
-        final boolean showImeButton = /*(*/(hints /*& StatusBarManager.NAVIGATION_HINT_IME_SHOWN)*/ != 0);
-        switch(mImeHintMode) {
-            case IME_HINT_MODE_ARROWS: // arrows
-                getSmartImeSwitchButton().setVisibility(View.INVISIBLE);
-                setImeArrowsVisibility(mCurrentView, backAlt ? View.VISIBLE : View.INVISIBLE);
-                setMediaArrowsVisibility(mCurrentView, View.INVISIBLE);
-                break;
-            case IME_AND_MEDIA_HINT_MODE_ARROWS:
-                getSmartImeSwitchButton().setVisibility(View.INVISIBLE);
-                setImeArrowsVisibility(mCurrentView, backAlt ? View.VISIBLE : View.INVISIBLE);
-                setMediaArrowsVisibility(backAlt);
-                break;
-            case IME_HINT_MODE_PICKER:
-                getHiddenContext().findViewWithTag(Res.Softkey.IME_SWITCHER).setVisibility(INVISIBLE);
-                getSmartImeSwitchButton().setVisibility(showImeButton ? View.VISIBLE : View.INVISIBLE);
-                setImeArrowsVisibility(mCurrentView, View.INVISIBLE);
-                setMediaArrowsVisibility(mCurrentView, View.INVISIBLE);
-                break;
-            default: // hidden
-                getSmartImeSwitchButton().setVisibility(View.INVISIBLE);
-                setImeArrowsVisibility(mCurrentView, View.INVISIBLE);
-                setMediaArrowsVisibility(mCurrentView, View.INVISIBLE);
+        setRotationButtonVisibility();
+        if (mRotateButtonVisible) {
+            getSmartImeSwitchButton().setVisibility(View.INVISIBLE);
+            setImeArrowsVisibility(mCurrentView, View.INVISIBLE);
+            setMediaArrowsVisibility(mCurrentView, View.INVISIBLE);
+        } else {
+            final boolean showImeButton = /*(*/(hints /*& StatusBarManager.NAVIGATION_HINT_IME_SHOWN)*/ != 0);
+            switch(mImeHintMode) {
+                case IME_HINT_MODE_ARROWS: // arrows
+                    getSmartImeSwitchButton().setVisibility(View.INVISIBLE);
+                    setImeArrowsVisibility(mCurrentView, backAlt ? View.VISIBLE : View.INVISIBLE);
+                    setMediaArrowsVisibility(mCurrentView, View.INVISIBLE);
+                    break;
+                case IME_AND_MEDIA_HINT_MODE_ARROWS:
+                    getSmartImeSwitchButton().setVisibility(View.INVISIBLE);
+                    setImeArrowsVisibility(mCurrentView, backAlt ? View.VISIBLE : View.INVISIBLE);
+                    setMediaArrowsVisibility(backAlt);
+                    break;
+                case IME_HINT_MODE_PICKER:
+                    getHiddenContext().findViewWithTag(Res.Softkey.IME_SWITCHER).setVisibility(INVISIBLE);
+                    getSmartImeSwitchButton().setVisibility(showImeButton ? View.VISIBLE : View.INVISIBLE);
+                    setImeArrowsVisibility(mCurrentView, View.INVISIBLE);
+                    setMediaArrowsVisibility(mCurrentView, View.INVISIBLE);
+                    break;
+                default: // hidden
+                    getSmartImeSwitchButton().setVisibility(View.INVISIBLE);
+                    setImeArrowsVisibility(mCurrentView, View.INVISIBLE);
+                    setMediaArrowsVisibility(mCurrentView, View.INVISIBLE);
+            }
         }
 
         // Update menu button in case the IME state has changed.
@@ -487,13 +522,18 @@ public class SmartBarView extends BaseNavigationBar {
                 }
             }
         }
-        if (mImeHintMode == 3) {
-            if (disableHome) {
+
+        if (disableHome) {
+            if (mImeHintMode == 3) {
                 setMediaArrowsVisibility(mCurrentView, View.INVISIBLE);
-            } else {
+            }
+            setRotationButtonVisibility(mCurrentView, View.INVISIBLE);
+        } else {
+            if (mImeHintMode == 3) {
                 final boolean backAlt = (mNavigationIconHints & StatusBarManager.NAVIGATION_HINT_BACK_ALT) != 0;
                 setMediaArrowsVisibility(backAlt);
             }
+            setRotationButtonVisibility();
         }
     }
 
@@ -760,6 +800,8 @@ public class SmartBarView extends BaseNavigationBar {
             contextLayout.addView(imeArrowRight);
             SmartButtonView mediaArrowRight = generateContextKey(landscape, Res.Softkey.MEDIA_ARROW_RIGHT);
             contextLayout.addView(mediaArrowRight);
+            SmartButtonView rotationButton = generateContextKey(landscape, Res.Softkey.ROTATION_BUTTON);
+            contextLayout.addView(rotationButton);
         }
 
         return contextLayout;
@@ -792,6 +834,8 @@ public class SmartBarView extends BaseNavigationBar {
             actionConfig = new ActionConfig(getContext(), ActionHandler.SYSTEMUI_TASK_MEDIA_PREVIOUS);
         } else if (tag.equals(Res.Softkey.MEDIA_ARROW_RIGHT)) {
             actionConfig = new ActionConfig(getContext(), ActionHandler.SYSTEMUI_TASK_MEDIA_NEXT);
+        } else if (tag.equals(Res.Softkey.ROTATION_BUTTON)) {
+            actionConfig = new ActionConfig(getContext(), ActionHandler.SYSTEMUI_TASK_ROTATION);
         }
 
         buttonConfig.setActionConfig(actionConfig, ActionConfig.PRIMARY);

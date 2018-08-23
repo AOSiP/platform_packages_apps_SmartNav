@@ -244,6 +244,15 @@ public class FlingLogoController implements SmartObservable {
         hiddenLogo.setImageDrawable(getCurrentDrawable());
         updateButtonScalingAndPadding(currentLogo, mLogoConfig, mHost.isLandscape());
         updateButtonScalingAndPadding(hiddenLogo, mLogoConfig, !mHost.isLandscape());
+
+        ImageView currentRotationLogo = (ImageView)current.findViewById(R.id.rotationLogo);
+        ImageView hiddenRotationLogo = (ImageView)hidden.findViewById(R.id.rotationLogo);
+        currentRotationLogo.setImageDrawable(null);
+        currentRotationLogo.setImageDrawable(getCurrentRotationDrawable());
+        hiddenRotationLogo.setImageDrawable(null);
+        hiddenRotationLogo.setImageDrawable(getCurrentRotationDrawable());
+        updateButtonScalingAndPadding(currentRotationLogo, mLogoConfig, mHost.isLandscape());
+        updateButtonScalingAndPadding(hiddenRotationLogo, mLogoConfig, !mHost.isLandscape());
     }
 
     Drawable getCurrentDrawable() {
@@ -258,9 +267,17 @@ public class FlingLogoController implements SmartObservable {
             d = KeyButtonDrawable.create(mContext, light, dark, false);
             return d;
         }
+
         light = mHost.mResourceMap.mFlingLogo;
         dark = mHost.mResourceMap.mFlingLogoDark;
         d = KeyButtonDrawable.create(mContext, light, dark, false);
+        return d;
+    }
+
+    Drawable getCurrentRotationDrawable() {
+        Drawable light = mHost.mResourceMap.mFlingRotationLogo;
+        Drawable dark = mHost.mResourceMap.mFlingRotationLogoDark;
+        KeyButtonDrawable d = KeyButtonDrawable.create(mContext, light, dark, false);
         return d;
     }
 
