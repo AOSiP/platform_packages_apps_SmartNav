@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8b63b5c9_76637519",
+        "filename": "res/values/dimens.xml",
+        "patchSetId": 6
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1000167
+      },
+      "writtenOn": "2019-05-12T15:51:59Z",
+      "side": 1,
+      "message": "Unused in SmartNav",
+      "revId": "848bedaab1862175aee688dc7c879eb15f3d14db",
+      "serverId": "44769751-fbfc-497d-9c9a-4bb318a4117c",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7733d368_8f96ac59",
+        "filename": "res/values/dimens.xml",
+        "patchSetId": 6
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1000167
+      },
+      "writtenOn": "2019-05-12T15:51:59Z",
+      "side": 1,
+      "message": "Unused in SmartNav",
+      "revId": "848bedaab1862175aee688dc7c879eb15f3d14db",
+      "serverId": "44769751-fbfc-497d-9c9a-4bb318a4117c",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d81a66c6_11d0d433",
+        "filename": "res/values/dimens.xml",
+        "patchSetId": 6
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 1000167
+      },
+      "writtenOn": "2019-05-12T15:51:59Z",
+      "side": 1,
+      "message": "Unused in SmartNav",
+      "revId": "848bedaab1862175aee688dc7c879eb15f3d14db",
+      "serverId": "44769751-fbfc-497d-9c9a-4bb318a4117c",
+      "unresolved": true
+    }
+  ]
+}
